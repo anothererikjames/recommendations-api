@@ -1,0 +1,24 @@
+name: API Governance
+on:
+  push:
+    paths: ['.github/openapi/**']
+  pull_request:
+    paths: ['.github/openapi/**']
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Spectral
+        run: npm install -g @stoplight/spectral-cli
+      - name: Lint OpenAPI Spec
+        run: spectral lint .github/openapi/openapi.yaml --fail-severity error
+      - name: Install Postman CLI
+        run: curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+      - name: Governance Check
+        run: postman api lint 52274286-98e578e6-9092-43ca-90e1-3a1c7602384f
